@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --version:*)",
+      "Bash(docker:*)",
+      "Bash(npm --version:*)",
+      "Bash(python:*)",
+      "Bash(c:/Bot/backend/venv/Scripts/python.exe:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx vite build:*)",
+      "WebFetch(domain:core.telegram.org)",
+      "Bash(./venv/Scripts/python manage.py makemigrations:*)",
+      "Bash(./venv/Scripts/python manage.py migrate:*)"
+    ]
+  }
+}

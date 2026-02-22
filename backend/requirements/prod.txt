@@ -1,0 +1,7 @@
+-r base.txt
+
+# Production
+django-storages>=1.14
+boto3>=1.35
+django-csp>=4.0
+sentry-sdk[django]>=2.0

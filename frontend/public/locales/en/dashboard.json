@@ -1,0 +1,11 @@
+{
+  "title": "Dashboard",
+  "total_bots": "Total Bots",
+  "active_bots": "Active Bots",
+  "total_messages": "Total Messages",
+  "total_users": "Total Users",
+  "messages_chart": "Messages Over Time",
+  "users_chart": "User Growth",
+  "recent_errors": "Recent Errors",
+  "no_data": "No data available"
+}
