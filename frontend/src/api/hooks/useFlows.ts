@@ -81,6 +81,22 @@ export function usePublishFlow(botId: string, flowId: string) {
   });
 }
 
+export function useUnpublishFlow(botId: string, flowId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { data } = await client.post(
+        `/bots/${botId}/flows/${flowId}/unpublish/`
+      );
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["flows", botId] });
+      queryClient.invalidateQueries({ queryKey: ["flow", botId, flowId] });
+    },
+  });
+}
+
 export function useValidateFlow(botId: string, flowId: string) {
   return useMutation({
     mutationFn: async () => {

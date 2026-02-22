@@ -17,11 +17,48 @@ class FlowEngine:
 
     def __init__(self, bot):
         self.bot = bot
-        self.flow = Flow.objects.filter(bot=bot, is_published=True).first()
+        self.flows = list(Flow.objects.filter(bot=bot, is_published=True).prefetch_related("nodes"))
+
+    def _find_flow_for_message(self, incoming_content: dict):
+        """Find the right flow based on incoming message.
+
+        Priority:
+        1. Exact command match (e.g. /help -> flow with start.command="/help")
+        2. Default flow (start.command is empty)
+        """
+        text = (incoming_content.get("text") or "").strip()
+        is_command = text.startswith("/")
+        command_word = text.split()[0].lower() if is_command and text else ""
+
+        default_flow = None
+        default_start = None
+
+        for flow in self.flows:
+            start_node = None
+            for node in flow.nodes.all():
+                if node.node_type == "start":
+                    start_node = node
+                    break
+
+            if not start_node:
+                continue
+
+            node_command = (start_node.data.get("command") or "").strip()
+
+            if node_command:
+                normalized = node_command if node_command.startswith("/") else f"/{node_command}"
+                if is_command and command_word == normalized.lower():
+                    return flow, start_node
+            else:
+                if default_flow is None:
+                    default_flow = flow
+                    default_start = start_node
+
+        return default_flow, default_start
 
     def process_message(self, platform_user_id: str, user_info: dict, incoming_content: dict):
         """Process an incoming message and return a list of response actions."""
-        if not self.flow:
+        if not self.flows:
             return [{"type": "text", "text": self.bot.fallback_message}]
 
         chat_user, created = ChatUser.objects.get_or_create(
@@ -43,12 +80,30 @@ class FlowEngine:
             content=incoming_content,
         )
 
+        text = (incoming_content.get("text") or "").strip()
+        is_command = text.startswith("/")
         current_node = chat_user.current_node
-        if not current_node or current_node.flow_id != self.flow.id:
-            start_nodes = self.flow.nodes.filter(node_type="start")
-            current_node = start_nodes.first()
-            if not current_node:
+
+        # Determine which flow to use
+        if is_command or not current_node:
+            flow, start_node = self._find_flow_for_message(incoming_content)
+            if not flow or not start_node:
                 return [{"type": "text", "text": self.bot.fallback_message}]
+            current_node = start_node
+            if is_command:
+                chat_user.context_data = {}
+        else:
+            # Continue in current flow — verify it's still published
+            flow = None
+            for f in self.flows:
+                if current_node.flow_id == f.id:
+                    flow = f
+                    break
+            if not flow:
+                flow, start_node = self._find_flow_for_message(incoming_content)
+                if not flow or not start_node:
+                    return [{"type": "text", "text": self.bot.fallback_message}]
+                current_node = start_node
 
         responses = []
         visited = set()
@@ -61,7 +116,7 @@ class FlowEngine:
                 responses.extend(result["responses"])
             if result.get("wait_for_input"):
                 chat_user.current_node = node
-                chat_user.save(update_fields=["current_node", "updated_at"])
+                chat_user.save(update_fields=["current_node", "context_data", "updated_at"])
                 break
             next_node = self._resolve_next(node, chat_user, incoming_content)
             if next_node:

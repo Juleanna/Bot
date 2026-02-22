@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Save, Upload, CheckCircle, Pencil } from "lucide-react";
+import { ArrowLeft, Save, Upload, CheckCircle, Pencil, CloudOff } from "lucide-react";
 import type { Node, Edge } from "@xyflow/react";
 import { Button } from "@/components/ui/button";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
@@ -12,6 +12,7 @@ import {
   useCreateFlow,
   useSaveFlow,
   usePublishFlow,
+  useUnpublishFlow,
   useDeleteFlow,
   useDuplicateFlow,
 } from "@/api/hooks/useFlows";
@@ -47,6 +48,7 @@ export default function BotEditor() {
 
   const saveMutation = useSaveFlow(botId!, flow?.id ?? "");
   const publishMutation = usePublishFlow(botId!, flow?.id ?? "");
+  const unpublishMutation = useUnpublishFlow(botId!, flow?.id ?? "");
 
   useEffect(() => {
     if (flow?.name) setFlowName(flow.name);
@@ -219,10 +221,17 @@ export default function BotEditor() {
             <Save className="mr-1 h-3 w-3" />
             {t("save")}
           </Button>
-          <Button size="sm" onClick={() => publishMutation.mutate()} disabled={publishMutation.isPending}>
-            <Upload className="mr-1 h-3 w-3" />
-            {t("publish")}
-          </Button>
+          {flow.is_published ? (
+            <Button variant="outline" size="sm" onClick={() => unpublishMutation.mutate()} disabled={unpublishMutation.isPending}>
+              <CloudOff className="mr-1 h-3 w-3" />
+              {t("unpublish")}
+            </Button>
+          ) : (
+            <Button size="sm" onClick={() => publishMutation.mutate()} disabled={publishMutation.isPending}>
+              <Upload className="mr-1 h-3 w-3" />
+              {t("publish")}
+            </Button>
+          )}
         </div>
       </div>
 

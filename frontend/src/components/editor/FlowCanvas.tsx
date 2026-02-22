@@ -198,6 +198,8 @@ export default FlowCanvas;
 
 function getDefaultData(type: string): Record<string, unknown> {
   switch (type) {
+    case "start":
+      return { command: "" };
     case "message":
       return { text: "Hello!" };
     case "condition":

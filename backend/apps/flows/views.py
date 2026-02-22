@@ -37,12 +37,20 @@ class FlowViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"])
     def publish(self, request, bot_id=None, pk=None):
         flow = self.get_object()
-        Flow.objects.filter(bot_id=bot_id, is_published=True).update(is_published=False)
         flow.is_published = True
         flow.published_at = timezone.now()
         flow.save(update_fields=["is_published", "published_at", "updated_at"])
         logger.info("Flow published: %s (id=%s) for bot=%s", flow.name, flow.id, bot_id)
         return Response({"detail": "Flow published."})
+
+    @action(detail=True, methods=["post"])
+    def unpublish(self, request, bot_id=None, pk=None):
+        flow = self.get_object()
+        flow.is_published = False
+        flow.published_at = None
+        flow.save(update_fields=["is_published", "published_at", "updated_at"])
+        logger.info("Flow unpublished: %s (id=%s) for bot=%s", flow.name, flow.id, bot_id)
+        return Response({"detail": "Flow unpublished."})
 
     @action(detail=True, methods=["post"])
     def duplicate(self, request, bot_id=None, pk=None):

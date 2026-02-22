@@ -34,6 +34,19 @@ export default function PropertiesPanel({ node, onUpdate }: Props) {
     <div className="w-64 space-y-4 overflow-y-auto border-l border-[var(--glass-border)] bg-[var(--glass-bg-subtle)] backdrop-blur-xl p-4">
       <h3 className="text-sm font-semibold text-foreground">{t("panel.properties")}</h3>
 
+      {/* ── Start ── */}
+      {node.type === "start" && (
+        <div className="space-y-2">
+          <Label>{t("panel.command")}</Label>
+          <Input
+            value={(data.command as string) || ""}
+            placeholder={t("panel.command_placeholder")}
+            onChange={(e) => update("command", e.target.value)}
+          />
+          <p className="text-xs text-muted-foreground">{t("panel.command_hint")}</p>
+        </div>
+      )}
+
       {/* ── Message ── */}
       {(node.type === "message" || node.type === "button_menu" || node.type === "reply_keyboard") && (
         <div className="space-y-2">
