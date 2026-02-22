@@ -6,7 +6,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.bots.models import Bot
+from apps.common.encryption import decrypt_token
 from apps.messaging.services import FlowEngine
+from apps.messaging.telegram_sender import TelegramSender
 
 from .models import WebhookEvent
 
@@ -61,9 +63,10 @@ class TelegramWebhookView(APIView):
             engine = FlowEngine(bot)
             responses = engine.process_message(platform_user_id, user_info, incoming_content)
 
-            # TODO: Send responses back via Telegram API (Celery task)
-            # For now, just log them
-            logger.info(f"Bot {bot.name} responses: {responses}")
+            # Send responses back via Telegram API
+            token = decrypt_token(bot.api_token_encrypted)
+            sender = TelegramSender(token)
+            sender.send_responses(platform_user_id, responses)
 
             elapsed = int((time.time() - start) * 1000)
             event.status = "processed"

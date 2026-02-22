@@ -127,6 +127,13 @@
   "default_flow_name": "Основний сценарій",
   "flow_name_placeholder": "Назва сценарію",
   "published": "Опубліковано",
+  "flow_selector": "Обрати сценарій",
+  "new_flow": "Створити новий сценарій",
+  "delete_flow": "Видалити",
+  "delete_flow_confirm": "Видалити сценарій?",
+  "delete_flow_description": "Цей сценарій та всі його вузли будуть видалені назавжди. Цю дію неможливо скасувати.",
+  "nodes_count": "вузлів",
+  "duplicate_flow": "Дублювати",
   "validation": {
     "valid": "Сценарій валідний!",
     "invalid": "Сценарій має помилки",

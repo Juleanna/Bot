@@ -4,9 +4,19 @@ import { useTranslation } from "react-i18next";
 import { ArrowLeft, Save, Upload, CheckCircle, Pencil } from "lucide-react";
 import type { Node, Edge } from "@xyflow/react";
 import { Button } from "@/components/ui/button";
+import ConfirmDialog from "@/components/ui/confirm-dialog";
 import { useBot } from "@/api/hooks/useBots";
-import { useFlows, useFlow, useCreateFlow, useSaveFlow, usePublishFlow } from "@/api/hooks/useFlows";
+import {
+  useFlows,
+  useFlow,
+  useCreateFlow,
+  useSaveFlow,
+  usePublishFlow,
+  useDeleteFlow,
+  useDuplicateFlow,
+} from "@/api/hooks/useFlows";
 import FlowCanvas, { type FlowCanvasHandle } from "@/components/editor/FlowCanvas";
+import FlowSelector from "@/components/editor/FlowSelector";
 
 export default function BotEditor() {
   const { botId } = useParams<{ botId: string }>();
@@ -15,14 +25,25 @@ export default function BotEditor() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState(false);
   const [flowName, setFlowName] = useState("");
+  const [selectedFlowId, setSelectedFlowId] = useState<string | null>(null);
+  const [deleteFlowId, setDeleteFlowId] = useState<string | null>(null);
   const canvasRef = useRef<FlowCanvasHandle>(null);
 
   const { data: bot } = useBot(botId!);
   const { data: flows } = useFlows(botId!);
   const createFlow = useCreateFlow(botId!);
+  const deleteFlow = useDeleteFlow(botId!);
+  const duplicateFlow = useDuplicateFlow(botId!);
 
-  const latestFlow = flows?.[0];
-  const { data: flow, isLoading: flowLoading } = useFlow(botId!, latestFlow?.id ?? "");
+  // Auto-select: published flow first, otherwise first in list
+  useEffect(() => {
+    if (!flows || flows.length === 0) return;
+    if (selectedFlowId && flows.some((f) => f.id === selectedFlowId)) return;
+    const published = flows.find((f) => f.is_published);
+    setSelectedFlowId(published?.id ?? flows[0]?.id ?? null);
+  }, [flows, selectedFlowId]);
+
+  const { data: flow, isLoading: flowLoading } = useFlow(botId!, selectedFlowId ?? "");
 
   const saveMutation = useSaveFlow(botId!, flow?.id ?? "");
   const publishMutation = usePublishFlow(botId!, flow?.id ?? "");
@@ -76,11 +97,47 @@ export default function BotEditor() {
         })),
       });
     },
-    [flow, saveMutation]
+    [flow, saveMutation, flowName]
   );
 
   const handleCreateFlow = () => {
-    createFlow.mutate({ name: t("default_flow_name") });
+    createFlow.mutate(
+      { name: t("default_flow_name") },
+      {
+        onSuccess: (data) => {
+          setSelectedFlowId(data.id);
+          setSelectedNodeId(null);
+        },
+      }
+    );
+  };
+
+  const handleDuplicateFlow = (flowId: string) => {
+    duplicateFlow.mutate(flowId, {
+      onSuccess: (data) => {
+        setSelectedFlowId(data.id);
+        setSelectedNodeId(null);
+      },
+    });
+  };
+
+  const handleDeleteFlow = () => {
+    if (!deleteFlowId) return;
+    deleteFlow.mutate(deleteFlowId, {
+      onSuccess: () => {
+        if (selectedFlowId === deleteFlowId) {
+          setSelectedFlowId(null);
+          setSelectedNodeId(null);
+        }
+        setDeleteFlowId(null);
+      },
+    });
+  };
+
+  const handleSelectFlow = (flowId: string) => {
+    if (flowId === selectedFlowId) return;
+    setSelectedFlowId(flowId);
+    setSelectedNodeId(null);
   };
 
   if (!flow && !flowLoading && flows && flows.length === 0) {
@@ -112,6 +169,20 @@ export default function BotEditor() {
           </Button>
           <span className="font-semibold text-foreground">{bot?.name}</span>
           <span className="text-muted-foreground">/</span>
+
+          {/* Flow Selector */}
+          <FlowSelector
+            flows={flows ?? []}
+            currentFlowId={selectedFlowId ?? ""}
+            onSelect={handleSelectFlow}
+            onCreate={handleCreateFlow}
+            onDuplicate={handleDuplicateFlow}
+            onDelete={(id) => setDeleteFlowId(id)}
+          />
+
+          <span className="text-muted-foreground">/</span>
+
+          {/* Inline flow name editing */}
           {editingName ? (
             <input
               autoFocus
@@ -136,7 +207,7 @@ export default function BotEditor() {
               {flowName || flow.name} <Pencil className="h-3 w-3" />
             </button>
           )}
-          <span className="text-xs text-muted-foreground">v{flow.version}</span>
+
           {flow.is_published && (
             <span className="flex items-center gap-1 text-xs text-green-400">
               <CheckCircle className="h-3 w-3" /> {t("published")}
@@ -158,6 +229,7 @@ export default function BotEditor() {
       {/* Canvas */}
       <div className="flex-1 min-h-0 overflow-hidden">
         <FlowCanvas
+          key={flow.id}
           ref={canvasRef}
           initialNodes={initialNodes}
           initialEdges={initialEdges}
@@ -166,6 +238,19 @@ export default function BotEditor() {
           onSelectNode={setSelectedNodeId}
         />
       </div>
+
+      {/* Delete Confirmation */}
+      {deleteFlowId && (
+        <ConfirmDialog
+          title={t("delete_flow_confirm")}
+          description={t("delete_flow_description")}
+          confirmLabel={t("delete_flow")}
+          variant="danger"
+          isPending={deleteFlow.isPending}
+          onConfirm={handleDeleteFlow}
+          onCancel={() => setDeleteFlowId(null)}
+        />
+      )}
     </div>
   );
 }

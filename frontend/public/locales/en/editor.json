@@ -127,6 +127,13 @@
   "default_flow_name": "Main Flow",
   "flow_name_placeholder": "Flow name",
   "published": "Published",
+  "flow_selector": "Select flow",
+  "new_flow": "Create new flow",
+  "delete_flow": "Delete",
+  "delete_flow_confirm": "Delete flow?",
+  "delete_flow_description": "This flow and all its nodes will be permanently deleted. This action cannot be undone.",
+  "nodes_count": "nodes",
+  "duplicate_flow": "Duplicate",
   "validation": {
     "valid": "Flow is valid!",
     "invalid": "Flow has errors",

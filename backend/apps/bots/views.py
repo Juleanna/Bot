@@ -8,6 +8,7 @@ from rest_framework.response import Response
 
 from apps.common.encryption import decrypt_token
 from apps.common.permissions import IsAdmin
+from apps.messaging.telegram_sender import register_webhook, remove_webhook
 
 from .models import Bot
 from .serializers import BotListSerializer, BotSerializer
@@ -43,9 +44,38 @@ class BotViewSet(viewsets.ModelViewSet):
             )
         bot.is_active = True
         bot.status = "active"
-        bot.save(update_fields=["is_active", "status", "updated_at"])
+
+        # Register webhook with platform (skip for localhost — use polling instead)
+        host = request.get_host()
+        is_local = host.startswith("localhost") or host.startswith("127.0.0.1")
+
+        if bot.platform == "telegram" and not is_local:
+            try:
+                token = decrypt_token(bot.api_token_encrypted)
+                webhook_url = request.build_absolute_uri(f"/api/v1/webhooks/telegram/{bot.id}/")
+                result = register_webhook(token, webhook_url)
+                if result.get("ok"):
+                    bot.webhook_url = webhook_url
+                    logger.info("Telegram webhook registered for bot %s: %s", bot.name, webhook_url)
+                else:
+                    bot.status = "error"
+                    bot.is_active = False
+                    bot.save(update_fields=["is_active", "status", "updated_at"])
+                    return Response(
+                        {"detail": f"Failed to register webhook: {result.get('description', 'Unknown error')}"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            except Exception as e:
+                logger.exception("Failed to register webhook for bot %s", bot.name)
+                return Response(
+                    {"detail": f"Failed to register webhook: {str(e)}"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        elif is_local:
+            logger.info("Skipping webhook registration for local dev — use 'run_polling' command")
+
+        bot.save(update_fields=["is_active", "status", "webhook_url", "updated_at"])
         logger.info("Bot activated: %s (id=%s) by user=%s", bot.name, bot.id, request.user.email)
-        # TODO: Register webhook with platform via Celery task
         return Response({"detail": "Bot activated."})
 
     @action(detail=True, methods=["post"])
@@ -53,9 +83,18 @@ class BotViewSet(viewsets.ModelViewSet):
         bot = self.get_object()
         bot.is_active = False
         bot.status = "paused"
-        bot.save(update_fields=["is_active", "status", "updated_at"])
+
+        # Remove webhook from platform
+        if bot.platform == "telegram" and bot.api_token_encrypted:
+            try:
+                token = decrypt_token(bot.api_token_encrypted)
+                remove_webhook(token)
+                bot.webhook_url = ""
+            except Exception as e:
+                logger.warning("Failed to remove webhook for bot %s: %s", bot.name, e)
+
+        bot.save(update_fields=["is_active", "status", "webhook_url", "updated_at"])
         logger.info("Bot deactivated: %s (id=%s) by user=%s", bot.name, bot.id, request.user.email)
-        # TODO: Remove webhook from platform via Celery task
         return Response({"detail": "Bot deactivated."})
 
     @action(detail=True, methods=["post"], url_path="test-connection")

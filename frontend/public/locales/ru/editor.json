@@ -127,6 +127,13 @@
   "default_flow_name": "Основной сценарий",
   "flow_name_placeholder": "Название сценария",
   "published": "Опубликовано",
+  "flow_selector": "Выбрать сценарий",
+  "new_flow": "Создать новый сценарий",
+  "delete_flow": "Удалить",
+  "delete_flow_confirm": "Удалить сценарий?",
+  "delete_flow_description": "Этот сценарий и все его узлы будут удалены навсегда. Это действие нельзя отменить.",
+  "nodes_count": "узлов",
+  "duplicate_flow": "Дублировать",
   "validation": {
     "valid": "Сценарий валиден!",
     "invalid": "Сценарий содержит ошибки",

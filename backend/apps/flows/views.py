@@ -85,6 +85,12 @@ class FlowViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
         )
 
+    def perform_destroy(self, instance):
+        if instance.is_published:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({"detail": "Cannot delete a published flow. Unpublish it first."})
+        instance.delete()
+
     @action(detail=True, methods=["post"])
     def validate(self, request, bot_id=None, pk=None):
         flow = self.get_object()

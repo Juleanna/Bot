@@ -91,3 +91,30 @@ export function useValidateFlow(botId: string, flowId: string) {
     },
   });
 }
+
+export function useDeleteFlow(botId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (flowId: string) => {
+      await client.delete(`/bots/${botId}/flows/${flowId}/`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["flows", botId] });
+    },
+  });
+}
+
+export function useDuplicateFlow(botId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (flowId: string) => {
+      const { data } = await client.post<Flow>(
+        `/bots/${botId}/flows/${flowId}/duplicate/`
+      );
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["flows", botId] });
+    },
+  });
+}
