@@ -21,7 +21,9 @@
     "contact": "Contact",
     "delay": "Delay",
     "chat_action": "Chat Action",
-    "invoice": "Invoice"
+    "invoice": "Invoice",
+    "goto": "Goto / Jump",
+    "sub_flow": "Sub-flow"
   },
   "panel": {
     "node_palette": "Nodes",
@@ -123,7 +125,11 @@
     "invoice_add_price": "Add price item",
     "invoice_price_label": "Label",
     "invoice_price_amount": "Amount (cents)",
-    "invoice_photo_url": "Photo URL"
+    "invoice_photo_url": "Photo URL",
+    "target_node": "Target node",
+    "target_node_placeholder": "Select target node",
+    "target_flow": "Target flow",
+    "target_flow_placeholder": "Select flow"
   },
   "no_flow": "No flow yet. Create one to start building your bot.",
   "create_flow": "Create Flow",

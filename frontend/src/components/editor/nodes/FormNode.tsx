@@ -1,6 +1,7 @@
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { ClipboardList } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { SideHandles } from "./SideHandles";
 
 interface FieldData {
   name: string;
@@ -33,6 +34,7 @@ export default function FormNode({ data, selected }: NodeProps) {
         )}
       </div>
       <Handle type="source" position={Position.Bottom} />
+      <SideHandles />
     </div>
   );
 }

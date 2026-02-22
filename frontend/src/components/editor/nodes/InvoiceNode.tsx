@@ -1,6 +1,7 @@
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { CreditCard } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { SideHandles } from "./SideHandles";
 
 interface PriceItem {
   label: string;
@@ -30,6 +31,7 @@ export default function InvoiceNode({ data, selected }: NodeProps) {
         <p className="text-xs font-medium text-lime-400">{(total / 100).toFixed(2)} {currency}</p>
       )}
       <Handle type="source" position={Position.Bottom} />
+      <SideHandles />
     </div>
   );
 }

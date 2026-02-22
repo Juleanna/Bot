@@ -23,6 +23,8 @@ class NodeType(models.TextChoices):
     DELAY = "delay", "Delay / Timer"
     CHAT_ACTION = "chat_action", "Chat Action"
     INVOICE = "invoice", "Invoice / Payment"
+    GOTO = "goto", "Goto / Jump"
+    SUB_FLOW = "sub_flow", "Sub-flow"
     END = "end", "End"
 
 

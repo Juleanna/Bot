@@ -1,6 +1,7 @@
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { Activity } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { SideHandles } from "./SideHandles";
 
 export default function ChatActionNode({ data, selected }: NodeProps) {
   const { t } = useTranslation("editor");
@@ -19,6 +20,7 @@ export default function ChatActionNode({ data, selected }: NodeProps) {
       </div>
       <p className="mt-1 text-xs text-muted-foreground">{action}</p>
       <Handle type="source" position={Position.Bottom} />
+      <SideHandles />
     </div>
   );
 }

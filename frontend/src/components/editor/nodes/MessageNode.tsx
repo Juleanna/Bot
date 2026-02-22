@@ -1,6 +1,7 @@
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { MessageSquare } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { SideHandles } from "./SideHandles";
 
 export default function MessageNode({ data, selected }: NodeProps) {
   const { t } = useTranslation("editor");
@@ -18,6 +19,7 @@ export default function MessageNode({ data, selected }: NodeProps) {
       </div>
       <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{text}</p>
       <Handle type="source" position={Position.Bottom} />
+      <SideHandles />
     </div>
   );
 }

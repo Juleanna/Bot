@@ -1,6 +1,7 @@
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { Image } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { SideHandles } from "./SideHandles";
 
 export default function MediaNode({ data, selected }: NodeProps) {
   const { t } = useTranslation("editor");
@@ -20,6 +21,7 @@ export default function MediaNode({ data, selected }: NodeProps) {
       </div>
       {caption && <p className="mt-1 text-xs text-muted-foreground line-clamp-1">{caption}</p>}
       <Handle type="source" position={Position.Bottom} />
+      <SideHandles />
     </div>
   );
 }

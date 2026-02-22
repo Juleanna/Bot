@@ -1,6 +1,7 @@
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { Phone } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { SideHandles } from "./SideHandles";
 
 export default function ContactNode({ data, selected }: NodeProps) {
   const { t } = useTranslation("editor");
@@ -23,6 +24,7 @@ export default function ContactNode({ data, selected }: NodeProps) {
       {name && <p className="mt-1 text-xs text-muted-foreground">{name}</p>}
       {phone && <p className="text-xs text-muted-foreground">{phone}</p>}
       <Handle type="source" position={Position.Bottom} />
+      <SideHandles />
     </div>
   );
 }

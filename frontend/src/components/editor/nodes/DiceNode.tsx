@@ -1,6 +1,7 @@
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { Dices } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { SideHandles } from "./SideHandles";
 
 export default function DiceNode({ data, selected }: NodeProps) {
   const { t } = useTranslation("editor");
@@ -19,6 +20,7 @@ export default function DiceNode({ data, selected }: NodeProps) {
         <span className="text-lg">{emoji}</span>
       </div>
       <Handle type="source" position={Position.Bottom} />
+      <SideHandles />
     </div>
   );
 }

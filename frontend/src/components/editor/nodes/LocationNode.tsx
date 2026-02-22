@@ -1,6 +1,7 @@
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { MapPin } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { SideHandles } from "./SideHandles";
 
 export default function LocationNode({ data, selected }: NodeProps) {
   const { t } = useTranslation("editor");
@@ -26,6 +27,7 @@ export default function LocationNode({ data, selected }: NodeProps) {
         <p className="mt-1 text-xs text-muted-foreground">{lat.toFixed(4)}, {lng.toFixed(4)}</p>
       )}
       <Handle type="source" position={Position.Bottom} />
+      <SideHandles />
     </div>
   );
 }

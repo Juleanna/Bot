@@ -21,7 +21,9 @@
     "contact": "Контакт",
     "delay": "Задержка",
     "chat_action": "Действие в чате",
-    "invoice": "Счёт"
+    "invoice": "Счёт",
+    "goto": "Переход",
+    "sub_flow": "Под-сценарий"
   },
   "panel": {
     "node_palette": "Узлы",
@@ -123,7 +125,11 @@
     "invoice_add_price": "Добавить позицию",
     "invoice_price_label": "Название",
     "invoice_price_amount": "Сумма (копейки)",
-    "invoice_photo_url": "URL фото"
+    "invoice_photo_url": "URL фото",
+    "target_node": "Целевой узел",
+    "target_node_placeholder": "Выберите узел",
+    "target_flow": "Целевой сценарий",
+    "target_flow_placeholder": "Выберите сценарий"
   },
   "no_flow": "Сценариев пока нет. Создайте один, чтобы начать строить бота.",
   "create_flow": "Создать сценарий",

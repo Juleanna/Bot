@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Plus, X } from "lucide-react";
+import type { FlowListItem } from "@/types/flow";
 
 const glassSelect = "w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] p-2 text-sm text-foreground backdrop-blur-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ring/40";
 const glassTextarea = "w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] p-2 text-sm text-foreground backdrop-blur-sm placeholder:text-muted-foreground transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ring/40";
@@ -12,9 +13,11 @@ const glassCheckbox = "mr-2 accent-primary";
 interface Props {
   node: Node | null;
   onUpdate: (id: string, data: Record<string, unknown>) => void;
+  nodes?: Node[];
+  flows?: FlowListItem[];
 }
 
-export default function PropertiesPanel({ node, onUpdate }: Props) {
+export default function PropertiesPanel({ node, onUpdate, nodes, flows }: Props) {
   const { t } = useTranslation("editor");
 
   if (!node) {
@@ -44,6 +47,57 @@ export default function PropertiesPanel({ node, onUpdate }: Props) {
             onChange={(e) => update("command", e.target.value)}
           />
           <p className="text-xs text-muted-foreground">{t("panel.command_hint")}</p>
+        </div>
+      )}
+
+      {/* ── Goto ── */}
+      {node.type === "goto" && (
+        <div className="space-y-2">
+          <Label>{t("panel.target_node")}</Label>
+          <select
+            className={glassSelect}
+            value={(data.target_node_id as string) || ""}
+            onChange={(e) => update("target_node_id", e.target.value)}
+          >
+            <option value="">{t("panel.target_node_placeholder")}</option>
+            {(nodes ?? [])
+              .filter((n) => n.id !== node.id && n.type !== "goto")
+              .map((n) => {
+                const nd = n.data as Record<string, unknown>;
+                const label = (nd.text as string) || (nd.command as string) || (nd.question as string) || "";
+                return (
+                  <option key={n.id} value={n.id}>
+                    {t(`nodes.${n.type}`)} {label ? `— ${label.slice(0, 30)}` : `(${n.id.slice(0, 8)})`}
+                  </option>
+                );
+              })}
+          </select>
+        </div>
+      )}
+
+      {/* ── Sub-flow ── */}
+      {node.type === "sub_flow" && (
+        <div className="space-y-2">
+          <Label>{t("panel.target_flow")}</Label>
+          <select
+            className={glassSelect}
+            value={(data.flow_id as string) || ""}
+            onChange={(e) => {
+              const selectedFlow = (flows ?? []).find((f) => f.id === e.target.value);
+              onUpdate(node.id, {
+                ...data,
+                flow_id: e.target.value,
+                _flow_name: selectedFlow?.name || "",
+              });
+            }}
+          >
+            <option value="">{t("panel.target_flow_placeholder")}</option>
+            {(flows ?? []).map((f) => (
+              <option key={f.id} value={f.id}>
+                {f.name} {f.is_published ? `(${t("published")})` : ""}
+              </option>
+            ))}
+          </select>
         </div>
       )}
 

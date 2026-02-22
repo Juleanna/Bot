@@ -1,6 +1,7 @@
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { BarChart } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { SideHandles } from "./SideHandles";
 
 export default function PollNode({ data, selected }: NodeProps) {
   const { t } = useTranslation("editor");
@@ -32,6 +33,7 @@ export default function PollNode({ data, selected }: NodeProps) {
         </div>
       )}
       <Handle type="source" position={Position.Bottom} />
+      <SideHandles />
     </div>
   );
 }

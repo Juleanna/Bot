@@ -17,6 +17,8 @@ import {
   Timer,
   Activity,
   CreditCard,
+  CornerDownRight,
+  Workflow,
 } from "lucide-react";
 
 interface NodeDef {
@@ -57,6 +59,8 @@ const groups: { key: string; nodes: NodeDef[] }[] = [
       { type: "chat_action", icon: Activity, color: "text-gray-400", bg: "bg-gray-500/15 border border-gray-500/20 hover:bg-gray-500/25" },
       { type: "form", icon: ClipboardList, color: "text-orange-400", bg: "bg-orange-500/15 border border-orange-500/20 hover:bg-orange-500/25" },
       { type: "webhook", icon: Globe, color: "text-red-400", bg: "bg-red-500/15 border border-red-500/20 hover:bg-red-500/25" },
+      { type: "goto", icon: CornerDownRight, color: "text-indigo-400", bg: "bg-indigo-500/15 border border-indigo-500/20 hover:bg-indigo-500/25" },
+      { type: "sub_flow", icon: Workflow, color: "text-rose-400", bg: "bg-rose-500/15 border border-rose-500/20 hover:bg-rose-500/25" },
     ],
   },
 ];

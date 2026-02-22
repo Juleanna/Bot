@@ -1,6 +1,7 @@
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { Globe } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { SideHandles } from "./SideHandles";
 
 export default function WebhookNode({ data, selected }: NodeProps) {
   const { t } = useTranslation("editor");
@@ -21,6 +22,7 @@ export default function WebhookNode({ data, selected }: NodeProps) {
       </div>
       {url && <p className="mt-1 truncate text-xs text-muted-foreground">{url}</p>}
       <Handle type="source" position={Position.Bottom} />
+      <SideHandles />
     </div>
   );
 }

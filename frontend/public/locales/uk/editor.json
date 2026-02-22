@@ -21,7 +21,9 @@
     "contact": "Контакт",
     "delay": "Затримка",
     "chat_action": "Дія в чаті",
-    "invoice": "Рахунок"
+    "invoice": "Рахунок",
+    "goto": "Перехід",
+    "sub_flow": "Під-сценарій"
   },
   "panel": {
     "node_palette": "Вузли",
@@ -123,7 +125,11 @@
     "invoice_add_price": "Додати позицію",
     "invoice_price_label": "Назва",
     "invoice_price_amount": "Сума (копійки)",
-    "invoice_photo_url": "URL фото"
+    "invoice_photo_url": "URL фото",
+    "target_node": "Цільовий вузол",
+    "target_node_placeholder": "Оберіть вузол",
+    "target_flow": "Цільовий сценарій",
+    "target_flow_placeholder": "Оберіть сценарій"
   },
   "no_flow": "Сценаріїв ще немає. Створіть один, щоб почати будувати бота.",
   "create_flow": "Створити сценарій",

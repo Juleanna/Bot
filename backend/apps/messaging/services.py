@@ -309,10 +309,18 @@ class FlowEngine:
             "wait_for_input": False,
         }
 
+    def _handle_goto(self, node, chat_user, incoming):
+        return {"responses": [], "wait_for_input": False}
+
+    def _handle_sub_flow(self, node, chat_user, incoming):
+        return {"responses": [], "wait_for_input": False}
+
     def _handle_end(self, node, chat_user, incoming):
-        chat_user.current_node = None
-        chat_user.context_data = {}
-        chat_user.save(update_fields=["current_node", "context_data", "updated_at"])
+        context = chat_user.context_data or {}
+        if not context.get("call_stack"):
+            chat_user.current_node = None
+            chat_user.context_data = {}
+            chat_user.save(update_fields=["current_node", "context_data", "updated_at"])
         return {"responses": [], "wait_for_input": False}
 
     def _get_next_node(self, node: FlowNode):
@@ -320,6 +328,40 @@ class FlowEngine:
         return edge.target_node if edge else None
 
     def _resolve_next(self, node: FlowNode, chat_user: ChatUser, incoming: dict):
+        if node.node_type == "goto":
+            target_id = node.data.get("target_node_id")
+            if target_id:
+                return FlowNode.objects.filter(id=target_id).first()
+            return None
+
+        if node.node_type == "sub_flow":
+            flow_id = node.data.get("flow_id")
+            if flow_id:
+                context = chat_user.context_data or {}
+                stack = context.get("call_stack", [])
+                stack.append(str(node.id))
+                context["call_stack"] = stack
+                chat_user.context_data = context
+                chat_user.save(update_fields=["context_data", "updated_at"])
+                start = FlowNode.objects.filter(flow_id=flow_id, node_type="start").first()
+                if start:
+                    return start
+            return None
+
+        if node.node_type == "end":
+            context = chat_user.context_data or {}
+            stack = context.get("call_stack", [])
+            if stack:
+                return_node_id = stack.pop()
+                context["call_stack"] = stack
+                chat_user.context_data = context
+                chat_user.save(update_fields=["context_data", "updated_at"])
+                return_node = FlowNode.objects.filter(id=return_node_id).first()
+                if return_node:
+                    edge = FlowEdge.objects.filter(source_node=return_node).order_by("priority").first()
+                    return edge.target_node if edge else None
+            return None
+
         edges = FlowEdge.objects.filter(source_node=node).order_by("priority").select_related("target_node")
 
         if node.node_type == "condition":

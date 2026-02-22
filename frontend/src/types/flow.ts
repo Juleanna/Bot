@@ -7,6 +7,8 @@ export type NodeType =
   | "form"
   | "webhook"
   | "google_sheets"
+  | "goto"
+  | "sub_flow"
   | "end";
 
 export interface FlowNodeData {

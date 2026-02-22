@@ -245,6 +245,7 @@ export default function BotEditor() {
           onSave={handleSave}
           selectedNodeId={selectedNodeId}
           onSelectNode={setSelectedNodeId}
+          flows={flows}
         />
       </div>
 

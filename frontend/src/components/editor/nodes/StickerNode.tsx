@@ -1,6 +1,7 @@
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { Smile } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { SideHandles } from "./SideHandles";
 
 export default function StickerNode({ data, selected }: NodeProps) {
   const { t } = useTranslation("editor");
@@ -21,6 +22,7 @@ export default function StickerNode({ data, selected }: NodeProps) {
       </div>
       {sticker && <p className="mt-1 truncate text-xs text-muted-foreground">{sticker}</p>}
       <Handle type="source" position={Position.Bottom} />
+      <SideHandles />
     </div>
   );
 }

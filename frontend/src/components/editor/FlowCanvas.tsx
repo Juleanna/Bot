@@ -30,8 +30,11 @@ import ContactNode from "./nodes/ContactNode";
 import DelayNode from "./nodes/DelayNode";
 import ChatActionNode from "./nodes/ChatActionNode";
 import InvoiceNode from "./nodes/InvoiceNode";
+import GotoNode from "./nodes/GotoNode";
+import SubFlowNode from "./nodes/SubFlowNode";
 import NodePalette from "./NodePalette";
 import PropertiesPanel from "./PropertiesPanel";
+import type { FlowListItem } from "@/types/flow";
 
 const nodeTypes: NodeTypes = {
   start: StartNode,
@@ -51,6 +54,8 @@ const nodeTypes: NodeTypes = {
   delay: DelayNode,
   chat_action: ChatActionNode,
   invoice: InvoiceNode,
+  goto: GotoNode,
+  sub_flow: SubFlowNode,
 };
 
 const defaultEdgeOptions = {
@@ -70,6 +75,7 @@ interface Props {
   onSave: (nodes: Node[], edges: Edge[]) => void;
   selectedNodeId: string | null;
   onSelectNode: (id: string | null) => void;
+  flows?: FlowListItem[];
 }
 
 export interface FlowCanvasHandle {
@@ -82,6 +88,7 @@ const FlowCanvas = forwardRef<FlowCanvasHandle, Props>(function FlowCanvas({
   onSave,
   selectedNodeId,
   onSelectNode,
+  flows,
 }, ref) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -189,7 +196,7 @@ const FlowCanvas = forwardRef<FlowCanvasHandle, Props>(function FlowCanvas({
           />
         </ReactFlow>
       </div>
-      <PropertiesPanel node={selectedNode} onUpdate={handleNodeDataUpdate} />
+      <PropertiesPanel node={selectedNode} onUpdate={handleNodeDataUpdate} nodes={nodes} flows={flows} />
     </div>
   );
 });
@@ -230,6 +237,10 @@ function getDefaultData(type: string): Record<string, unknown> {
       return { action: "typing" };
     case "invoice":
       return { title: "", description: "", payload: "", currency: "USD", prices: [], photo_url: "" };
+    case "goto":
+      return { target_node_id: "" };
+    case "sub_flow":
+      return { flow_id: "" };
     default:
       return {};
   }
