@@ -124,6 +124,8 @@
   },
   "no_flow": "No flow yet. Create one to start building your bot.",
   "create_flow": "Create Flow",
+  "default_flow_name": "Main Flow",
+  "flow_name_placeholder": "Flow name",
   "published": "Published",
   "validation": {
     "valid": "Flow is valid!",

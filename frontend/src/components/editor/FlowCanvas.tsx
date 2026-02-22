@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useMemo, useRef, forwardRef, useImperativeHandle } from "react";
 import {
   ReactFlow,
   addEdge,
@@ -72,13 +72,17 @@ interface Props {
   onSelectNode: (id: string | null) => void;
 }
 
-export default function FlowCanvas({
+export interface FlowCanvasHandle {
+  save: () => void;
+}
+
+const FlowCanvas = forwardRef<FlowCanvasHandle, Props>(function FlowCanvas({
   initialNodes,
   initialEdges,
   onSave,
   selectedNodeId,
   onSelectNode,
-}: Props) {
+}, ref) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
@@ -108,7 +112,7 @@ export default function FlowCanvas({
       };
 
       const newNode: Node = {
-        id: `node_${Date.now()}`,
+        id: crypto.randomUUID(),
         type,
         position,
         data: getDefaultData(type),
@@ -122,7 +126,7 @@ export default function FlowCanvas({
   const handleAddNode = useCallback(
     (type: string) => {
       const newNode: Node = {
-        id: `node_${Date.now()}`,
+        id: crypto.randomUUID(),
         type,
         position: { x: 250, y: nodes.length * 100 + 50 },
         data: getDefaultData(type),
@@ -146,13 +150,12 @@ export default function FlowCanvas({
     [setNodes]
   );
 
-  // Expose save
-  const handleSave = useCallback(() => {
-    onSave(nodes, edges);
-  }, [nodes, edges, onSave]);
+  useImperativeHandle(ref, () => ({
+    save: () => onSave(nodes, edges),
+  }), [nodes, edges, onSave]);
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full overflow-hidden">
       <NodePalette onAddNode={handleAddNode} />
       <div className="flex-1" ref={reactFlowWrapper}>
         <ReactFlow
@@ -189,7 +192,9 @@ export default function FlowCanvas({
       <PropertiesPanel node={selectedNode} onUpdate={handleNodeDataUpdate} />
     </div>
   );
-}
+});
+
+export default FlowCanvas;
 
 function getDefaultData(type: string): Record<string, unknown> {
   switch (type) {

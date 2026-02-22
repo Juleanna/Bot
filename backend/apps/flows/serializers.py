@@ -5,10 +5,11 @@ from .models import Flow, FlowEdge, FlowNode
 
 
 class FlowNodeSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(required=False)
+
     class Meta:
         model = FlowNode
         fields = ["id", "node_type", "position_x", "position_y", "data"]
-        read_only_fields = ["id"]
 
 
 class FlowEdgeSerializer(serializers.ModelSerializer):

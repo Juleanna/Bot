@@ -1,5 +1,6 @@
 import logging
 
+import requests
 from django.db.models import Count
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
@@ -67,8 +68,81 @@ class BotViewSet(viewsets.ModelViewSet):
             )
         try:
             token = decrypt_token(bot.api_token_encrypted)
-            # TODO: Actually test the connection with the platform
-            return Response({"detail": "Connection successful.", "platform": bot.platform})
+        except Exception as e:
+            logger.warning("Bot connection test failed (decrypt): %s (id=%s): %s", bot.name, bot.id, e)
+            return Response(
+                {"detail": f"Connection failed: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            if bot.platform == "telegram":
+                resp = requests.get(
+                    f"https://api.telegram.org/bot{token}/getMe",
+                    timeout=10,
+                )
+                if resp.status_code == 200 and resp.json().get("ok"):
+                    bot_info = resp.json()["result"]
+                    return Response({
+                        "detail": "Connection successful.",
+                        "platform": bot.platform,
+                        "bot_username": bot_info.get("username", ""),
+                    })
+                else:
+                    error_desc = resp.json().get("description", "Invalid token")
+                    return Response(
+                        {"detail": f"Connection failed: {error_desc}"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+            elif bot.platform == "viber":
+                resp = requests.post(
+                    "https://chatapi.viber.com/pa/get_account_info",
+                    json={"auth_token": token},
+                    timeout=10,
+                )
+                data = resp.json()
+                if data.get("status") == 0:
+                    return Response({
+                        "detail": "Connection successful.",
+                        "platform": bot.platform,
+                        "bot_username": data.get("name", ""),
+                    })
+                else:
+                    return Response(
+                        {"detail": f"Connection failed: {data.get('status_message', 'Invalid token')}"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+            elif bot.platform == "whatsapp":
+                resp = requests.get(
+                    "https://graph.facebook.com/v21.0/me",
+                    headers={"Authorization": f"Bearer {token}"},
+                    timeout=10,
+                )
+                if resp.status_code == 200:
+                    return Response({
+                        "detail": "Connection successful.",
+                        "platform": bot.platform,
+                    })
+                else:
+                    error_msg = resp.json().get("error", {}).get("message", "Invalid token")
+                    return Response(
+                        {"detail": f"Connection failed: {error_msg}"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+            else:
+                return Response(
+                    {"detail": f"Unsupported platform: {bot.platform}"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        except requests.Timeout:
+            return Response(
+                {"detail": "Connection failed: request timed out"},
+                status=status.HTTP_408_REQUEST_TIMEOUT,
+            )
         except Exception as e:
             logger.warning("Bot connection test failed: %s (id=%s): %s", bot.name, bot.id, e)
             return Response(

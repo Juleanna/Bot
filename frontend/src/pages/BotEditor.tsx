@@ -1,18 +1,21 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Save, Upload, CheckCircle } from "lucide-react";
+import { ArrowLeft, Save, Upload, CheckCircle, Pencil } from "lucide-react";
 import type { Node, Edge } from "@xyflow/react";
 import { Button } from "@/components/ui/button";
 import { useBot } from "@/api/hooks/useBots";
 import { useFlows, useFlow, useCreateFlow, useSaveFlow, usePublishFlow } from "@/api/hooks/useFlows";
-import FlowCanvas from "@/components/editor/FlowCanvas";
+import FlowCanvas, { type FlowCanvasHandle } from "@/components/editor/FlowCanvas";
 
 export default function BotEditor() {
   const { botId } = useParams<{ botId: string }>();
   const { t } = useTranslation("editor");
   const navigate = useNavigate();
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState(false);
+  const [flowName, setFlowName] = useState("");
+  const canvasRef = useRef<FlowCanvasHandle>(null);
 
   const { data: bot } = useBot(botId!);
   const { data: flows } = useFlows(botId!);
@@ -23,6 +26,10 @@ export default function BotEditor() {
 
   const saveMutation = useSaveFlow(botId!, flow?.id ?? "");
   const publishMutation = usePublishFlow(botId!, flow?.id ?? "");
+
+  useEffect(() => {
+    if (flow?.name) setFlowName(flow.name);
+  }, [flow?.name]);
 
   const initialNodes: Node[] = useMemo(
     () =>
@@ -51,7 +58,7 @@ export default function BotEditor() {
     (nodes: Node[], edges: Edge[]) => {
       if (!flow) return;
       saveMutation.mutate({
-        name: flow.name,
+        name: flowName || flow.name,
         nodes: nodes.map((n) => ({
           id: n.id,
           node_type: n.type,
@@ -73,7 +80,7 @@ export default function BotEditor() {
   );
 
   const handleCreateFlow = () => {
-    createFlow.mutate({ name: "Main Flow" });
+    createFlow.mutate({ name: t("default_flow_name") });
   };
 
   if (!flow && !flowLoading && flows && flows.length === 0) {
@@ -104,7 +111,32 @@ export default function BotEditor() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <span className="font-semibold text-foreground">{bot?.name}</span>
-          <span className="text-sm text-muted-foreground">/ {flow.name} v{flow.version}</span>
+          <span className="text-muted-foreground">/</span>
+          {editingName ? (
+            <input
+              autoFocus
+              className="bg-transparent text-sm font-medium text-foreground border-b border-primary outline-none px-1 py-0.5 w-40"
+              value={flowName}
+              placeholder={t("flow_name_placeholder")}
+              onChange={(e) => setFlowName(e.target.value)}
+              onBlur={() => setEditingName(false)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") setEditingName(false);
+                if (e.key === "Escape") {
+                  setFlowName(flow.name);
+                  setEditingName(false);
+                }
+              }}
+            />
+          ) : (
+            <button
+              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              onClick={() => setEditingName(true)}
+            >
+              {flowName || flow.name} <Pencil className="h-3 w-3" />
+            </button>
+          )}
+          <span className="text-xs text-muted-foreground">v{flow.version}</span>
           {flow.is_published && (
             <span className="flex items-center gap-1 text-xs text-green-400">
               <CheckCircle className="h-3 w-3" /> {t("published")}
@@ -112,7 +144,7 @@ export default function BotEditor() {
           )}
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => handleSave(initialNodes, initialEdges)} disabled={saveMutation.isPending}>
+          <Button variant="outline" size="sm" onClick={() => canvasRef.current?.save()} disabled={saveMutation.isPending}>
             <Save className="mr-1 h-3 w-3" />
             {t("save")}
           </Button>
@@ -124,8 +156,9 @@ export default function BotEditor() {
       </div>
 
       {/* Canvas */}
-      <div className="flex-1">
+      <div className="flex-1 min-h-0 overflow-hidden">
         <FlowCanvas
+          ref={canvasRef}
           initialNodes={initialNodes}
           initialEdges={initialEdges}
           onSave={handleSave}

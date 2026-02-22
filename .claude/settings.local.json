@@ -10,7 +10,10 @@
       "Bash(npx vite build:*)",
       "WebFetch(domain:core.telegram.org)",
       "Bash(./venv/Scripts/python manage.py makemigrations:*)",
-      "Bash(./venv/Scripts/python manage.py migrate:*)"
+      "Bash(./venv/Scripts/python manage.py migrate:*)",
+      "Bash(./venv/Scripts/python:*)",
+      "Bash(DJANGO_SETTINGS_MODULE=config.settings.local ./venv/Scripts/python:*)",
+      "Bash(DJANGO_SETTINGS_MODULE=config.settings.base PYTHONPATH=. ./venv/Scripts/python:*)"
     ]
   }
 }
